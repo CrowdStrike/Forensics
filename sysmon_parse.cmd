@@ -5,11 +5,24 @@ REM Sysmon_Parse v0.1
 REM by Matt Churchill (matt.churchill@crowdstrike.com)
 REM
 REM About:
-REM Script to automate parsing of Event Log Results of the Microsoft's Sysinternal Tool Sysmon
+REM Script to automate parsing of the event log for Microsoft's Sysinternal tool Sysmon.
 REM Sysmon Download and Info: http://technet.microsoft.com/en-us/sysinternals/dn798348
 REM 
-REM	System Requirements: Python 2.7, see folder structure for additional required downloads
-REM
+REM System Requirements: Python 2.7, .NET 4.5
+REM 
+REM Additional Tools Needed:
+REM Microsoft Log Parser, http://www.microsoft.com/en-us/download/details.aspx?id=24659
+REM TekCollect.py, http://www.tekdefense.com/tekcollect/
+REM IPNetInfo, http://www.nirsoft.net/utils/ipnetinfo.html
+REM virustotalchecker, http://www.woanware.co.uk/forensics/virustotalchecker.html
+REM 
+REM Folder Structure:
+REM		- Main Directory containing sysmon_parse.cmd
+REM			- tools
+REM				- ipnetinfo
+REM				- logparser
+REM				- tekcollect
+REM				- virustotalchecker
 REM ------------------------------------------------------------------------------------------------------------------------
 REM Syntax:
 REM sysmon_parse.cmd (file name optional)
