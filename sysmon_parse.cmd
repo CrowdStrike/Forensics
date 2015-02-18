@@ -17,7 +17,7 @@ REM IPNetInfo, http://www.nirsoft.net/utils/ipnetinfo.html
 REM virustotalchecker, http://www.woanware.co.uk/forensics/virustotalchecker.html
 REM 
 REM Folder Structure:
-REM		- Main Directory containing sysmon_parse.cmd
+REM		- Main Directory containing sysmon_parse.cmd and sysmon_keywords.txt
 REM			- tools
 REM				- ipnetinfo
 REM				- logparser
@@ -73,6 +73,13 @@ ECHO verbose >> %scriptlocation%Results_%dtstamp%\IPs.txt
 python tekcollect.py -f %scriptlocation%Results_%dtstamp%\sysmon_parsed.txt -t ip4 >> %scriptlocation%Results_%dtstamp%\IPs.txt
 ECHO end >> %scriptlocation%Results_%dtstamp%\IPs.txt
 python tekcollect.py -f %scriptlocation%Results_%dtstamp%\sysmon_parsed.txt -t exe > %scriptlocation%Results_%dtstamp%\Executables.txt
+REM
+REM ------------------------------------------------------------------------------------------------------------------------
+REM This section uses a list of terms contained in "sysmon_keywords.txt" to search the parsed Sysmon results 
+REM and add them to a separate CSV file. Add any extra terms to sysmon_keywords.txt in order to search for them here. 
+cd %scriptlocation%
+Echo ....Searching for Keywords
+findstr /G:sysmon_keywords.txt %scriptlocation%Results_%dtstamp%\sysmon_parsed.txt >> %scriptlocation%Results_%dtstamp%\Keywords.csv
 REM
 REM ------------------------------------------------------------------------------------------------------------------------
 REM Begin some automated analysis on extracted data

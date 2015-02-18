@@ -1,0 +1,15 @@
+\|whoami\>
+\|ping\>
+\|net\>
+\|net1\>
+\|dsquery\>
+\|dsget\>
+\|tasklist\>
+\|quser\>
+\|cacls\>
+\|powershell\>
+\|wsmprovhost\>
+.*\.ps1\>
+.*\.cmd\>
+.*\.bat\>
+.*\.rar\>
