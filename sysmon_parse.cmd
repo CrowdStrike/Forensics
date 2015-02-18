@@ -83,7 +83,7 @@ findstr /G:sysmon_keywords.txt %scriptlocation%Results_%dtstamp%\sysmon_parsed.t
 REM
 REM ------------------------------------------------------------------------------------------------------------------------
 REM Begin some automated analysis on extracted data
-ECHO ....Launching Analysis Tools
+ECHO ......Launching Analysis Tools
 REM ------------------------------------------------------------------------------------------------------------------------
 REM This section left in script for those who want to send lookups through Cymru. The results will be faster, stored in a text file, but not as robust as with IPNetInfo.
 REM https://www.team-cymru.org/Services/ip-to-asn.html#whois
@@ -109,6 +109,6 @@ REM
 REM ------------------------------------------------------------------------------------------------------------------------
 cd %scriptlocation%
 REM End script
-ECHO ......Check Parsing Output!
+ECHO ........Check Parsing Output!
 ECHO Analysis Tip: Open "sysmon_parsed.txt" with Excel, delimited file by "," and "|".
 ECHO For Event Type 1 (New Process Created), check Column K for Command Line used.
