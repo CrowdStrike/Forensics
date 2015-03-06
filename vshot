@@ -31,13 +31,6 @@ pcount=
 kdbg=
 nokgdb=
 
-## Path to volatility ##
-volpath="/usr/bin/volatility"
-## Path to bulk_extractor ##
-## If you do not wish to have bulk_extractor on your system replace the path with an application that exists
-## - bulkpath="/bin/echo" 
-bulkpath="/usr/local/bin/bulk_extractor"
-
 ## errors ##
 err(){
 	err_ary=( "File not found... $2" "Folder not found... $2" "Unrecognized option... use \"-h\" for more details" "Argument option must not start with a \"-\" ... " "Path to $2 not found... Please check script configuration." "Single Processor Detected ~ \"-mt\" option unavailable" "KDBG option invalid format (-h for details): $2" )
