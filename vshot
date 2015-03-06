@@ -78,7 +78,7 @@ get_imginfo(){
 	echo Scanning image for profile id...
 	$volpath -f $img_locat imageinfo | tee $dst_fldr/imageinfo.txt
 	echo -n Please enter your image profile:\ ;read img_info
-	if [ $nokgdb ];then echo -n Please enter your KDBG value:\ ;read kdbgr; kdbgset $kdbgr;fi 
+	if [] $nokgdb -eq 1 ]];then echo -n Please enter your KDBG value:\ ;read kdbgr; kdbgset $kdbgr;fi 
 }
 
 get_imglocat(){
