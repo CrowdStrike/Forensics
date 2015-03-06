@@ -1,0 +1,376 @@
+#!/bin/bash
+# vshot - The Volatile Shotgun
+# by Devin Gergen (devin.gergen@gmail.com)
+version="4.01"
+
+#updates to come
+# 1) extended volatilty tools
+# 2) profile specific tools
+# 3) -oshm option to use /dev/shm for ouput only (do not copy the memory image file to /dev/shm)
+# 4) timeline support
+# 5) resume interrupted image processing 
+
+### CONFIGURATION ##########################################################################################
+## Path to volatility ##
+volpath="/usr/bin/volatility"
+## Path to bulk_extractor ##
+## If you do not wish to have bulk_extractor on your system replace the path with an application that exists
+## - bulkpath="/bin/echo" 
+bulkpath="/usr/local/bin/bulk_extractor"
+############################################################################################################
+
+## Global Vars ##
+img_locat=
+dst_fldr=
+img_info=
+preprnd=$RANDOM$RANDOM$RANDOM
+showtime=0
+runstrings=0
+runbulk=0
+pcount=
+kdbg=
+nokgdb=
+
+## Path to volatility ##
+volpath="/usr/bin/volatility"
+## Path to bulk_extractor ##
+## If you do not wish to have bulk_extractor on your system replace the path with an application that exists
+## - bulkpath="/bin/echo" 
+bulkpath="/usr/local/bin/bulk_extractor"
+
+## errors ##
+err(){
+	err_ary=( "File not found... $2" "Folder not found... $2" "Unrecognized option... use \"-h\" for more details" "Argument option must not start with a \"-\" ... " "Path to $2 not found... Please check script configuration." "Single Processor Detected ~ \"-mt\" option unavailable" "KDBG option invalid format (-h for details): $2" )
+	echo Error: ${err_ary[$1]};exit
+}
+
+#checks for tool existance 
+varary=( "$volpath" "$bulkpath" )
+for v in ${varary[@]};do if [[ $(which "$v" ) ]]; then : ;else err 4 $v ; fi ;done
+
+
+## default array of volatility modules to be run
+toolarray=( pslist psscan psxview pstree dlllist filescan handles hivelist connections connscan clipboard consoles cmdscan cmdline hashdump getsids mutantscan modules shimcache malfind ldrmodules modscan driverscan driverirp sockets sockscan shellbags netscan threads thrdscan ssdt userassist mbrparser mftparser svcscan atoms atomscan callbacks deskscan devicetree envars userhandles privs )
+
+#GENERAL TOOLS Not in toolarray ##
+#bioskbd crashinfo eventhooks evtlogs gahti gditimers gdt getservicesids hibinfo hivedump hivescan hpakextract hpakinfo idt iehistory imagecopy impscan kdbgscan kpcrscan ldrmodules lsadump machoinfo memdump memmap messagehooks moddump patcher printkey procexedump procmemdump raw2dmp screenshot sessions strings svcscan symlinkscan timeliner timers unloadedmodules vaddump vadinfo vadtree vadwalk vboxinfo vmwareinfo volshell windows wintree wndscan yarascan )
+
+##dumpdir required ##
+# dlldump dumpcerts dumpfiles
+
+## WIN7/VISTA ONLY ##
+# netscan
+
+#addthese back to the list later
+# apihooks
+# pstree -v
+# threads -L 
+
+
+kdbgset(){
+	kregchk='^.*[L]$'		#regex to check default KDBG string (volatility doesn't process it with the L at the end)
+	kregchk_two='^0x[0-9a-fA-F]*[^L]$'	#regex to check a correct format for KDBG
+	if [[ $1 =~ $kregchk ]];then
+		err 6 $1
+	else
+		if [[ $1 =~ $kregchk_two ]];then
+			kdbg=$1
+		else
+			err 6 $1 
+		fi
+	fi
+}
+
+get_imginfo(){
+	echo Scanning image for profile id...
+	$volpath -f $img_locat imageinfo | tee $dst_fldr/imageinfo.txt
+	echo -n Please enter your image profile:\ ;read img_info
+	if [ $nokgdb ];then echo -n Please enter your KDBG value:\ ;read kdbgr; kdbgset $kdbgr;fi 
+}
+
+get_imglocat(){
+	echo -n Please enter the full path to your memory image:\ ;read img_locat
+	if [ -f $img_locat ];then
+		:
+	else
+		err 0 $img_locat
+	fi
+}
+
+get_dstfldr(){
+	echo -n Please enter the full path to your destination directory:\ ;read dst_fldr
+  if [ -d $dst_fldr ];then
+		:
+	else
+		err 1 $dst_fldr
+	fi
+}
+
+get_loc(){
+	get_imglocat
+	get_dstfldr
+	get_imginfo
+	process_image $img_locat $dst_fldr	
+}
+
+strngsrchz(){
+	strng_arry=( l b L B )
+	echo -n Running: strings...
+	strings -t d $1 | awk '{printf $1":";for (i = 2; i <= NF; i++) printf "%s ",$i;print " "}' >> $2/strings.txt 2> /dev/null
+	for i in ${strng_arry[@]};do
+		strings -e $i -t d $1 | awk '{printf $1":";for (i = 2; i <= NF; i++) printf "%s ",$i;print " "}' >> $2/strings.txt 2> /dev/null
+	done	
+	$volpath -f $1 --profile=$img_info strings -s $2/strings.txt > $2/vol_strings.txt 2> /dev/null
+	echo DONE
+}
+
+#cal process_image /path/toprocess dst_fldr
+process_image(){
+	
+	if [ $showtime -eq 1 ];then date;fi #shows time if -time argument is used
+
+	cdbg=
+	if [ $kdbg ];then cdbg="-g $kdbg";fi #if $kdbg has content, the kdbgz variable will be set for use in command execution
+
+	if [ $runbulk -eq 1 ];then #runs bulk_extractor if -b argument is used 
+		$bulkpath -e wordlist -m 5 -o $2/bulk_ex_results $1 &> /dev/null &
+		echo Started bulk_extractor...
+	fi
+
+	if [[ $mthreads -eq 1 ]];then    #multithreading check
+		
+		trackfile=/dev/shm/$RANDOM$RANDOM$RANDOM.trackfile
+		#==========================
+		processor_array=( $(for i in $(seq 1 $pcount);do echo -n "0 ";done))
+		acount=0
+
+			while [ $acount -lt ${#toolarray[@]} ];do
+			        for i in $(seq 1 ${#processor_array[@]});do
+		                	if [ -f $trackfile.$i ];then
+		        	                processor_array[$(($i-1))]=$(cat $trackfile.$i)
+			                fi
+		         	       if [[ "${processor_array[$(($i-1))]}" == "0" ]];then
+						#The "taskset" tool assigns the volatility process to a specific CPU
+						#taskset -c $i volatiltiy...
+						# $i is the CPU
+						echo "taskset -c $i $volpath -f $1 --profile=$img_info ${toolarray[$acount]} $cdbg > $2/${toolarray[$acount]}.txt 2> /dev/null" > $trackfile.$i.command
+	                		        echo "echo -n ${toolarray[$acount]} completed at: " >> $trackfile.$i.command
+	        	       		        echo "date" >> $trackfile.$i.command
+		                 		echo "echo 0 > $trackfile.$i" >> $trackfile.$i.command
+						source $trackfile.$i.command &
+	                        		acount=$(( $acount + 1 ))
+	                	        	echo 1 > $trackfile.$i
+                			fi
+       				done
+	      	  	sleep 0.3 
+			done
+
+		vchk=$(ps -ef | grep $volpath| wc -l)
+        	while [ $vchk -gt 1 ];do
+	                echo Waiting for volatility to finish...
+         		sleep 10
+        	        vchk=$(ps -ef | grep $volpath| wc -l)
+	        done
+
+		rm $trackfile.*
+
+#==========================
+	else #non multithreading processing  
+		for i in $(seq 0 $(echo ${#toolarray[@]}-1|bc));do
+			echo -n Running: ${toolarray[$i]}...\ 
+			$volpath -f $1 --profile=$img_info ${toolarray[$i]} $kgdbz > $2/${toolarray[$i]}.txt 2> /dev/null
+			echo DONE
+		done
+	fi
+
+	if [ $runstrings -eq 1 ];then strngsrchz $1 $2; fi
+
+	bschk=$(ps -ef | grep bulk_extractor| wc -l)		#bschk variable initialized for first check in "while" loop
+	while [ $bschk -gt 1 ];do
+		echo Waiting for bulk_extractor to finish...
+		sleep 10
+		bschk=$(ps -ef | grep bulk_extractor| wc -l)
+	done	
+
+       	if [ $showtime -eq 1 ];then date;fi
+
+}
+
+chk_shm(){
+	avail_shm=$(df -B 1 /dev/shm | tail -1 |awk '{print $4}')
+	img_size=$(echo 2*$(ls -l $img_locat | awk '{print $5}')|bc)
+	if [[ $1 == "ns" ]];then
+		process_image $img_locat $dst_fldr
+	else
+		if [ $avail_shm -gt $img_size ];then
+			echo shm space available... processing in shm...
+			mkdir /dev/shm/$preprnd
+        	        cp $img_locat /dev/shm/$preprnd
+	                img_locat=/dev/shm/$preprnd/$(ls /dev/shm/$preprnd/)
+			mkdir /dev/shm/$preprnd/results
+			process_image $img_locat /dev/shm/$preprnd/results
+	
+			#move results to destination dir
+			mv /dev/shm/$preprnd/results/* $dst_fldr
+			#cleanup
+			rm -rf /dev/shm/$preprnd/
+		else
+			echo Not enough space to use shm...
+			echo You can resize shm by: sudo mount -o remount,size=4g /dev/shm
+			echo note: The size is adjustable... ctrl+c to exit or enter to continue with disk based processing...;read pause
+			process_image $img_locat $dst_fldr
+		fi
+	fi
+}
+
+usage(){
+echo -e "
+	vshot v$version - The Volatile Shotgun by Devin Gergen
+	
+	vshot usage:
+	-h	help dialogue
+	-shm	attempt to use /dev/shm for processing
+	-p	volatility profile to use: -p Win7SP1x64
+			- If no profile is given, vshot will run imageinfo
+			  and prompt user for profile and KDBG.
+	-i	memory image location: -i /cases/case/mem.img
+			- If not provided, vshot will prompt for user input.
+	-d	destination directory: -d /cases/case/memory_analysis
+			- If not provided, vshot will prompt for user input.
+	-time	display the start and end times for entire run
+	-str	run strings & volstrings
+	-mt	enables multithreading with volatility 
+	-b	run bulk_extractor
+	-g	volatility KDBG location: -g 0x82968c28
+			- KDBG can be found by running imageinfo on the memory image
+			- Provides speed boost
+			- If -g options is used with -p, vshot will not prompt the user for KDBG.
+"
+}
+
+hand_args(){
+	
+	#i d p time shm str mt b g
+	testarray=( 0 0 0 0 0 0 0 0 0 )
+
+	argarry=( $@ )
+	testreg="^\-"
+	for i in $( seq 0 $(echo ${#argarry[@]}-1|bc) );do	
+		case ${argarry[$i]} in
+			-h)
+				usage;exit
+				;;
+			--help)
+				usage;exit
+				;;
+			-shm)
+				testarray[5]=1 
+				;;
+			-p)
+				#uses argument after -p for the $volpath profile
+				pfsel=$(echo $i+1|bc)
+				if [[ ${argarry[$pfsel]} =~ $testreg ]];then
+					err 3
+				else
+					img_info=${argarry[$pfsel]}
+					testarray[2]=1
+				fi
+				;;
+			-i)
+				imgsel=$(echo $i+1|bc)
+				if [[ ${argarry[$imgsel]} =~ $testreg ]];then
+					err 3
+				else
+					img_locat=${argarry[$imgsel]}
+				        if [ -f $img_locat ];then
+						testarray[0]=1
+					else
+                				err 0 $img_locat
+        				fi
+				fi
+				;;
+			-d)
+				#uses argument after -d for the destination folder
+				dstsel=$(echo $i+1|bc)
+				if [[ ${argarry[$dstsel]} =~ $testreg ]];then
+					err 3
+				else
+					dst_fldr=${argarry[$dstsel]}
+				        if [ -d $dst_fldr ];then
+                				testarray[1]=1	
+        				else
+                				err 1 $dst_fldr
+				        fi
+				fi
+				;;
+			-time)
+				testarray[3]=1
+				;;
+			-str)
+				testarray[4]=1
+				;;
+			-mt)
+				pcount=$(echo $(cat /proc/cpuinfo | grep processor | wc -l)-1|bc)
+				if [ $pcount -eq 0 ];then
+					err 5
+				else
+					testarray[6]=1
+				fi
+				;;
+			-b)	testarray[7]=1
+				;;
+			-g)
+				kgdbchk=$(echo $i+1|bc)
+				if [[ ${argarry[$kgdbchk]} =~ $testreg ]];then
+                                        err 3
+                                else
+					testarray[8]=1
+					kdbgset ${argarry[$kgdbchk]} 
+				fi
+				;;
+			*)
+				ochkn=$(echo $i-1|bc)
+				optnchk=${argarry[$ochkn]}
+				if [[ "$optnchk" == "-p" || "$optnchk" == "-d" || "$optnchk" == "-i" || "$optnchk" == "-g" ]];then
+					: #goodcheck
+				else
+					err 2
+				fi
+				;;
+		esac
+	done
+
+	#i d p time str shm g
+	for z in $(seq 0 $(echo ${#testarray[@]}-1|bc));do
+		case $z in
+			0)	if [ ${testarray[$z]} -eq 0 ];then get_imglocat;fi #sets up image location variable
+				;;
+			1)	if [ ${testarray[$z]} -eq 0 ];then get_dstfldr;fi #sets up destination folder variable
+                                ;;
+			2)	if [ ${testarray[$z]} -eq 0 ];then get_imginfo;fi #sets up imageinfo variable
+                                ;;
+			3)	if [ ${testarray[$z]} -eq 1 ];then showtime=1;fi #flags "date" commands in process_image function
+                                ;;
+			4)	if [ ${testarray[$z]} -eq 1 ];then runstrings=1;fi #flags strings to run in process_image function
+				;;
+			5)	if [ ${testarray[$z]} -eq 1 ];then chk_shm;exit;fi #if shm option is used, executes processing for shm then exits
+				;;
+			6)	if [ ${testarray[$z]} -eq 1 ];then mthreads=1;fi #sets condition to use multiprocessor logic
+				;;
+			7)	if [ ${testarray[$z]} -eq 1 ];then runbulk=1;fi #sets condition to run bulk_extractor
+				;;
+			8)	if [ ${testarray[$z]} -eq 1 ];then nokgdb=1;fi #sets condition to skip prompt for kdbg
+				;;
+		esac
+	done
+	process_image $img_locat $dst_fldr
+}
+
+
+#### MAIN ####
+
+if [ -z "$*" ]; then
+	get_loc
+else
+	hand_args $@
+fi
