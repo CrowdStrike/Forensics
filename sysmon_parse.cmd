@@ -52,7 +52,7 @@ CLS
 REM Parse Sysmon Event Log using Microsoft's Logparser
 REM http://www.microsoft.com/en-us/download/details.aspx?id=24659
 ECHO Sysmon Log Copied, Now Parsing
-tools\logparser\logparser -i:evt -o:csv "Select RecordNumber,TO_UTCTIME(TimeGenerated),EventID,SourceName,ComputerName,SID,Strings from %src% WHERE EventID in ('1';'2';'3';'4';'5';'6';'7')" > Results_%dtstamp%\sysmon_parsed.txt
+tools\logparser\logparser -i:evt -o:csv "Select RecordNumber,TO_UTCTIME(TimeGenerated),EventID,SourceName,ComputerName,SID,Strings from %src% WHERE EventID in ('1';'2';'3';'4';'5';'6';'7';'8')" > Results_%dtstamp%\sysmon_parsed.txt
 REM
 REM ------------------------------------------------------------------------------------------------------------------------
 REM Remove copied Sysmon Event Log as it is no longer needed.
