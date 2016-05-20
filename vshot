@@ -12,11 +12,18 @@ version="4.01"
 
 ### CONFIGURATION ##########################################################################################
 ## Path to volatility ##
-volpath="/usr/bin/volatility"
+if which volatility >/dev/null; then 
+	volpath=`which volatility`; 
+elif which vol.py >/dev/null; then 
+	volpath=`which vol.py`
+else
+	echo "Path to vol.py or volatility not found! Please make sure Volatility is installed and in the \$PATH"
+	exit 1
+fi
 ## Path to bulk_extractor ##
 ## If you do not wish to have bulk_extractor on your system replace the path with an application that exists
 ## - bulkpath="/bin/echo" 
-bulkpath="/usr/local/bin/bulk_extractor"
+bulkpath=`which bulk_extractor`
 ############################################################################################################
 
 ## Global Vars ##
