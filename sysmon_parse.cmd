@@ -36,13 +36,13 @@ REM Setup:
 REM Set base folder, set input source file if needed, and make Results directory.
 SET scriptlocation=%~dp0
 SET src=%1
-SET dtstamp=%date:~-4%-%date:~4,2%-%date:~7,2%%time:~10,2%:%time:~3,2%:%time:~6,2%
+SET dtstamp=%date:~-4%%date:~4,2%%date:~7,2%_%time:~0,2%-%time:~3,2%-%time:~6,2%
 mkdir Results_%dtstamp%
 IF EXIST %src% GOTO parse
 REM
 REM ------------------------------------------------------------------------------------------------------------------------
 REM Copy Sysmon Event Log from running system.
-robocopy C:\Windows\system32\winevt\Logs %scriptlocation%Results_%dtstamp% *sysmon*.evtx
+for /f %%i in (hosts.txt) do copy \\%%i\c$\Windows\System32\winevt\Logs\*sysmon*.evtx %scriptlocation%Results_%dtstamp%\%%i_*.evtx
 SET src=%scriptlocation%Results_%dtstamp%\*.evtx
 REM
 REM ------------------------------------------------------------------------------------------------------------------------
@@ -56,7 +56,7 @@ tools\logparser\logparser -i:evt -o:csv "Select RecordNumber,TO_UTCTIME(TimeGene
 REM
 REM ------------------------------------------------------------------------------------------------------------------------
 REM Remove copied Sysmon Event Log as it is no longer needed.
-del %scriptlocation%Results_%dtstamp%\*.evtx
+REM del %scriptlocation%Results_%dtstamp%\*.evtx
 REM
 REM ------------------------------------------------------------------------------------------------------------------------
 REM Extract Information from text file using TekDefense's tekcollect.py tool.
@@ -103,8 +103,8 @@ REM Using woanware's virustotalchecker
 REM http://www.woanware.co.uk/forensics/virustotalchecker.html
 REM Remember to add your VirusTotal API Key to the Settings.xml file.
 REM Sysmon can track MD5, SHA1, or SHA256 hashes. Be sure to pick the hash file Sysmon is using. In this example it is SHA256.
-cd %scriptlocation%tools\virustotalchecker
-START virustotalchecker.exe -m c -f %scriptlocation%Results_%dtstamp%\MD5Hashes.txt -o %scriptlocation%Results_%dtstamp%
+REM cd %scriptlocation%tools\virustotalchecker
+REM START virustotalchecker.exe -m c -f %scriptlocation%Results_%dtstamp%\MD5Hashes.txt -o %scriptlocation%Results_%dtstamp%
 REM
 REM ------------------------------------------------------------------------------------------------------------------------
 cd %scriptlocation%

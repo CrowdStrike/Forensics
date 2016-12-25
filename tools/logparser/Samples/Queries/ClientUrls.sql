@@ -1,0 +1,5 @@
+SELECT	ClientIP,
+	COUNT(*)
+FROM URLSCAN
+WHERE Comment LIKE 'Url%'
+GROUP BY ClientIP

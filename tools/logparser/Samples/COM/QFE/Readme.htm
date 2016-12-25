@@ -1,0 +1,63 @@
+<HTML>
+
+<HEAD><TITLE>Log Parser sample COM Input Format</TITLE></HEAD>
+
+<BODY BGCOLOR="#EFEFFF" LINK="#000000" VLINK="#606060" ALINK="#303030">
+
+<FONT SIZE="5"><B>QFE COM Input Format sample</B></FONT><BR>
+
+<P>
+This sample COM input format implements an enumerator of QFE updates on the computer specified in the FROM clause.
+</P>
+
+<P>
+The following steps need to be performed in order to use this input format:
+
+<OL>
+
+<LI>Register the <I>QFE</I> scriptlet with the following command: <BR/> 
+	<TT>regsvr32 QFE.wsc</TT>
+</LI>
+
+<P><BR/></P>
+
+
+<LI>To see the fields returned by this input format, execute the following Log Parser command: <BR/> 
+	<TT>logparser -h -i:COM -iprogid:MSUtil.LogQuery.Sample.QFE</TT> <BR/>
+
+<P><BR/></P>
+
+<LI>Execute the following Log Parser query to retrieve QFE information from the local machine: <BR/> 
+	<TT>logparser "SELECT * FROM ." -i:COM -iprogid:MSUtil.LogQuery.Sample.QFE</TT> <BR/>
+	The query will return:<BR/>
+	<FONT SIZE="3">
+		<PRE>
+QFE      Description                            InstallDate InstalledBy 
+-------- -------------------------------------- ----------- ----------- 
+KB822925 Windows Server 2003 Hotfix - KB 822925 -           gabriegi    
+KB823182 Windows Server 2003 Hotfix - KB 823182 -           gabriegi    
+KB823559 Windows Server 2003 Hotfix - KB 823559 -           gabriegi    
+		</PRE>
+	</FONT>
+</LI>
+
+<LI>Execute the following Log Parser query to retrieve extended QFE information from the local machine: <BR/> 
+	<TT>logparser "SELECT * FROM ." -i:COM -iprogid:MSUtil.LogQuery.Sample.QFE -icomparams:ExtendedFields=on</TT> <BR/>
+	The query will return:<BR/>
+	<FONT SIZE="3">
+		<PRE>
+QFE      Description                            InstallDate InstalledBy Comments SP
+-------- -------------------------------------- ----------- ----------- -------- ---
+KB822925 Windows Server 2003 Hotfix - KB 822925 -           gabriegi    Update	 SP1
+KB823182 Windows Server 2003 Hotfix - KB 823182 -           gabriegi    Update	 SP1
+KB823559 Windows Server 2003 Hotfix - KB 823559 -           gabriegi    Update	 SP1
+
+<P><BR/></P>
+
+</OL>
+
+</P>
+
+
+</BODY>
+</HTML>

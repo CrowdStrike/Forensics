@@ -1,0 +1,16 @@
+UriStem LIKE '%cmd.exe%' OR
+UriStem LIKE '%\%%' OR
+UriStem LIKE '%...%' OR
+UriStem LIKE '%:%' OR
+UriStem LIKE '%$%' OR
+UriStem LIKE '%&%' OR
+UriStem LIKE '%\%00%' OR
+UriQuery LIKE '%\%3c%' OR
+UriQuery LIKE '%\%3e%' OR
+UriQuery LIKE '%\"%' OR
+UriQuery LIKE '%\'%' OR
+UriQuery LIKE '%#%' OR
+UriQuery LIKE '%\%00%'
+
+
+
