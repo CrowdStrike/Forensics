@@ -36,7 +36,7 @@ REM Setup:
 REM Set base folder, set input source file if needed, and make Results directory.
 SET scriptlocation=%~dp0
 SET src=%1
-SET dtstamp=%date:~-4%%date:~4,2%%date:~7,2%
+SET dtstamp=%date:~-4%-%date:~4,2%-%date:~7,2%%time:~10,2%:%time:~3,2%:%time:~6,2%
 mkdir Results_%dtstamp%
 IF EXIST %src% GOTO parse
 REM
