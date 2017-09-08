@@ -8,8 +8,11 @@
 \|quser\>
 \|cacls\>
 \|powershell\>
+\|wmic\>
 \|wsmprovhost\>
 .*\.ps1\>
 .*\.cmd\>
 .*\.bat\>
 .*\.rar\>
+.*\.vbe\>
+.*\.jse\>
