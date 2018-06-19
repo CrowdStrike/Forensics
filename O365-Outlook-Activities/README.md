@@ -12,6 +12,10 @@ This tool supports all versions of Python 3 and is backwards compatible with Pyt
 
  - requests
 
+### Installation
+
+Download activities.py and retriever.py.
+
 ### Access token
 
 This tool requires a valid OAuth 2.0 access token. For testing purposes, a token can be obtained from the [Outlook Dev Center - OAuth Sandbox](https://oauthplay.azurewebsites.net). Supply the token to the tool by setting an `OAUTH_TOKEN` environment variable (preferred method) or by including it as a command-line argument. 
