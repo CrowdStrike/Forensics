@@ -6,7 +6,7 @@ This tool leverages the Office 365 Outlook Activities API. It will continuously 
 
 ### Compatibility
 
-This tool supports all versions of Python 3 and is backwards compatible with Python 2.7
+This tool supports all versions of Python 3.
 
 ### Requirements
 
