@@ -5,8 +5,6 @@ Obtain a valid OAuth 2.0 access token from https://oauthplay.azurewebsites.net
 or implement your own OAuth 2.0 flow for Azure AD.
 """
 
-from __future__ import print_function
-
 import argparse
 import csv
 import os
@@ -89,10 +87,11 @@ while True:
         if not activities:
             print('No activities returned using the specific criteria.')
             sys.exit(1)
+
         try:
 
             # Create CSV file and write header
-            csv_file = open(args.output, 'w+')
+            csv_file = open(args.output, 'w+', encoding='utf-8-sig')
             writer = csv.DictWriter(
                     csv_file, extrasaction='ignore',
                     fieldnames=PROPERTIES, lineterminator='\n')
@@ -120,5 +119,5 @@ while True:
 
 # Close file and print completion status
 csv_file.close()
-print('\nSuccessfully retrieved {} activities.\n'.format(
-        batches * BATCH_SIZE + len(activities)), end='')
+print('\nSuccessfully retrieved {} activities.'.format(
+        batches * BATCH_SIZE + len(activities)))
