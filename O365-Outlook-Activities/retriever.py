@@ -85,7 +85,7 @@ while True:
 
         # Exit if no activities returned
         if not activities:
-            print('No activities returned using the specific criteria.')
+            print('No activities returned using the specified criteria.')
             sys.exit(1)
 
         try:
@@ -96,12 +96,13 @@ while True:
                     csv_file, extrasaction='ignore',
                     fieldnames=PROPERTIES, lineterminator='\n')
             writer.writeheader()
-            print('Retrieving activities', end='')
 
         # Exit if error occurred writing to file
         except IOError as error:
             print(error)
             sys.exit(1)
+        
+        print('Retrieving activities', end='')
 
     # Write rows to CSV file
     for activity in activities:
