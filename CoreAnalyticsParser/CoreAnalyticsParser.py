@@ -5,6 +5,11 @@
 @ email: kshitij.kumar@crowdstrike.com
 
 '''
+import sys 
+libpath = "/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python"
+if libpath not in sys.path:
+	sys.path.append(libpath)
+
 import json
 import csv
 import pytz
@@ -12,29 +17,29 @@ import glob
 import argparse
 import time
 import os
-import sys
 import dateutil.parser as parser
 from collections import OrderedDict
 
-sys.path.append("/System/Library/Frameworks/Python.framework/Versions/2.7/Extras/lib/python")
-
 class data_writer:
+
 	def __init__ (self, name, headers, datatype, outputdir='./'):
+
 		self.name = name
 		self.datatype = datatype
 		self.headers = headers
 		self.output_filename = self.name+'.'+self.datatype
-		self.data_file_name = outputdir+"/"+self.name+'.'+self.datatype	
-
-		clear = open(self.data_file_name,'w')
-		clear.close()
+		self.data_file_name = os.path.join(outputdir,self.output_filename)
 
 		if self.datatype == 'csv':
-			with open(self.data_file_name, 'a') as data_file:
+			with open(self.data_file_name, 'w') as data_file:
 				writer = csv.writer(data_file)
 				writer.writerow(headers)
+		elif self.datatype == 'json':
+			with open(self.data_file_name,'w') as data_file:
+				pass
 
 	def write_entry(self, data):
+
 		if self.datatype == 'csv':
 			with open(self.data_file_name, 'a') as data_file:
 				writer = csv.writer(data_file)
@@ -42,10 +47,11 @@ class data_writer:
 		elif self.datatype == 'json':
 			zipped_data = dict(zip(self.headers,data))
 			with open(self.data_file_name, 'a') as data_file:
-				data_file.write('\n')
 				json.dump(zipped_data, data_file)
+				data_file.write('\n')
 
 def stat(file):
+
 	os.environ['TZ'] = 'UTC0'
 
 	stat = os.lstat(file)
@@ -59,7 +65,7 @@ def stat(file):
 def CoreAnalyticsParser():
 
 	aparser = argparse.ArgumentParser(
-		description="CoreAnalyticsParser.pygit : a script to parse core_analytics files to csv - \
+		description="CoreAnalyticsParser.py: a script to parse core_analytics files to csv - \
 		an artifact of Mach-O file execution that retains up to one month of data. This artifact is only avalable on macOS 10.13 and higher."
 		)
 	mutu = aparser.add_mutually_exclusive_group(required=True)
@@ -92,7 +98,6 @@ def CoreAnalyticsParser():
 		analytics_location = glob.glob(args.input+'/Analytics*.core_analytics')
 	elif args.input and args.input.endswith('.core_analytics'):
 		analytics_location = [args.input]
-
 
 	if len(analytics_location) < 1:
 		print "[!] No .core_analytics files found."
@@ -163,7 +168,6 @@ def CoreAnalyticsParser():
 		print "[+] Found {0} aggregate files to parse.".format(len(agg_location))
 
 	for aggregate in agg_location:
-
 		data = open(aggregate, 'r').read()
 		data_lines = json.loads(data)
 
