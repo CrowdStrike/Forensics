@@ -8,6 +8,15 @@ This is a simple script that collates CoreAnalytics data (evidence of program ex
 
 This artifact only exists on macOS 10.13 and above. If you are attempting to test this script on your local machine, ensure that this OS requirement is met, and that you are running the script as sudo in order to capture aggregates data (which resides in /private/var/db/analyticsd/aggregates/). Please also ensure that pytz and dateutil have been installed on the system on which you are running the script.
 
+## Compatibility
+
+This script supports Python 2.7.
+
+## Requirements
+
+	- dateutil.parser
+	- pytz
+
 ## Usage
 
 At its simplest, you can run CoreAnalyticsParser against your local machine with the following invocation:
