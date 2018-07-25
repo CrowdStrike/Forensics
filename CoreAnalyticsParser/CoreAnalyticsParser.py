@@ -1,10 +1,14 @@
-#!/usr/bin/env python2
+#!/usr/bin/python
+# allow the script to run on a default macOS install
+# reference: 
+# <https://www.crowdstrike.com/blog/i-know-what-you-did-last-month-a-new-artifact-of-execution-on-macos-10-13/>
 
 '''
 @ author: Kshitij Kumar
 @ email: kshitij.kumar@crowdstrike.com
 
 '''
+import platform
 import sys
 import json
 import csv
@@ -59,6 +63,9 @@ def stat(file):
 
 
 def CoreAnalyticsParser():
+    # first check if we are on a compatible version of macOS
+    check_os_vers()
+    
     aparser = argparse.ArgumentParser(
         description="CoreAnalyticsParser.py: a script to parse core_analytics files to csv - \
         an artifact of Mach-O file execution that retains up to one month of data. This \
@@ -225,7 +232,19 @@ def CoreAnalyticsParser():
     else:
         print ("[!] No output file generated.")
 
+''' check to make sure we are in the correct version of macOS '''
+def check_os_vers():
+    full_vers = platform.mac_ver()[0]
+    split_vers = full_vers.split('.')
+    maj_vers = int(split_vers[1])
+    # return false if not 10.13 or greater
+    if maj_vers >= 13:
+        pass
+    else:
+        print("[!] macOS version must be greater than 10.13.")
+        exit()
+
 
 if __name__ == "__main__":
-
+    
     CoreAnalyticsParser()
