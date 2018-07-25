@@ -239,7 +239,7 @@ def check_os_vers():
     maj_vers = int(split_vers[1])
     # return false if not 10.13 or greater
     if maj_vers >= 13:
-        continue
+        pass
     else:
         print("[!] macOS version must be greater than 10.13")
         exit()
