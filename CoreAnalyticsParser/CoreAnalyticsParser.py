@@ -1,4 +1,5 @@
-#!/usr/bin/env python2
+#!/usr/bin/python
+# allow the script to run on a default macOS install
 
 '''
 @ author: Kshitij Kumar
