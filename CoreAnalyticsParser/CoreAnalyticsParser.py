@@ -7,7 +7,7 @@
 @ author: Kshitij Kumar
 @ email: kshitij.kumar@crowdstrike.com
 
-''''
+'''
 import platform
 import sys
 import json
