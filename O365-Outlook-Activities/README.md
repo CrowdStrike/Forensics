@@ -1,5 +1,9 @@
 # O365-Outlook-Activities
 
+## NOTE ##
+
+Access to the Activities API has been restricted by Microsoft. Accordingly, there are no plans to develop this tool any further.
+
 ## Description
 
 This tool leverages the [Office 365 Outlook Activities API](https://www.crowdstrike.com/blog/hiding-in-plain-sight-using-the-office-365-activities-api-to-investigate-business-email-compromises/). It will continuously fetch and write activities to a CSV file until all activities matching the specified criteria have been retrieved.
